@@ -109,7 +109,8 @@ const Suhrn: NextPage<Props> = ({
             Na Váš email <strong>{postponeUserInput.email}</strong> sme odoslali
             XML súbor potrebný pre odklad dane.
             <br />
-            {postponeUserInput.newsletter && ' Pošleme vám aj newsletter.'}
+            {postponeUserInput.newsletter &&
+              'Na váš email Vám čoskoro príde aj potvrdzovací email k odberu newslettera.'}
           </p>
         ) : (
           <PostponeEmailForm

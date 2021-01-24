@@ -7,6 +7,7 @@ import { TemplateParams } from './sendinblue'
 import { TaxFormUserInput } from '../types/TaxFormUserInput'
 import { translit } from './utils'
 import { PostponeUserInput } from '../types/PostponeUserInput'
+import { fetchPostJson } from './fetch'
 
 export const getCity = async (zip: string) => {
   const response = await fetch(
@@ -28,23 +29,12 @@ export const getNgoByName = async (
   return fetch(`/api/ngo?name=${name}`).then((response) => response.json())
 }
 
-const postFetch = async (path: string, body: any) => {
-  return fetch(path, {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  }).then((response) => response.json())
-}
-
 export const sendTaxEmail = async (
   email: string,
   params: TemplateParams,
   taxFormUserInput: TaxFormUserInput,
 ): Promise<SaveEmailResponse> => {
-  return postFetch('/api/tax-email', { email, params, taxFormUserInput })
+  return fetchPostJson('/api/tax-email', { email, params, taxFormUserInput })
 }
 
 export const sendPostponeEmail = async (
@@ -52,7 +42,11 @@ export const sendPostponeEmail = async (
   params: TemplateParams,
   postponeUserInput: PostponeUserInput,
 ): Promise<SaveEmailResponse> => {
-  return postFetch('/api/postpone-email', { email, params, postponeUserInput })
+  return fetchPostJson('/api/postpone-email', {
+    email,
+    params,
+    postponeUserInput,
+  })
 }
 
 export const getNace = async () => {
