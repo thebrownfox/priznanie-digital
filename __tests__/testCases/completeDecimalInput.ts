@@ -25,11 +25,6 @@ export const completeDecimalInput: E2eTestUserInput = {
   udajeODanovomBonuseNaDieta: '50.75',
   employed: true,
 
-  /** SECTION Mortgage */
-  r037_uplatnuje_uroky: true,
-  r037_zaplatene_uroky: '200,32',
-  r037_pocetMesiacov: '12',
-
   /** SECTION Pension */
   platil_prispevky_na_dochodok: true,
   zaplatene_prispevky_na_dochodok: '170,32',
@@ -41,7 +36,6 @@ export const completeDecimalInput: E2eTestUserInput = {
   r032_partner_vlastne_prijmy: '3000,76',
   r032_uplatnujem_na_partnera: true,
   partner_spolocna_domacnost: true,
-  partner_bonus_uplatneny: false,
   partner_podmienky: { '1': true },
 
   /** SECTION Children */

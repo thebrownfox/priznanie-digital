@@ -19,10 +19,21 @@ export type EmployedUserInput = Pick<
   | 'uhrnPreddavkovNaDan'
 >
 
+export type RentUserInput = Pick<
+  TaxFormUserInput,
+  | 'rent'
+  | 'vyskaPrijmovZPrenajmu'
+  | 'vyskaOslobodenia'
+  | 'prenajomPrijemZPrilezitostnejCinnosti'
+  | 'vydavkyZPrenajmu'
+  | 'rent_step'
+>
+
 export type ChildrenUserInput = Pick<
   TaxFormUserInput,
   | 'hasChildren'
   | 'children'
+  | 'partner_bonus_na_deti_chce_uplatnit'
   | 'partner_bonus_na_deti'
   | 'r034_priezvisko_a_meno'
   | 'r034_rodne_cislo'
@@ -41,7 +52,6 @@ export type PartnerUserInput = Pick<
   | 'r032_partner_pocet_mesiacov'
   | 'partner_step'
   | 'partner_spolocna_domacnost'
-  | 'partner_bonus_uplatneny'
   | 'partner_podmienky'
 >
 
@@ -81,13 +91,25 @@ export type PensionUserInput = Pick<
   'platil_prispevky_na_dochodok' | 'zaplatene_prispevky_na_dochodok'
 >
 
-export type MortgageUserInput = Pick<
+export type UrokyUserInput = Pick<
   TaxFormUserInput,
-  'r037_uplatnuje_uroky' | 'r037_zaplatene_uroky' | 'r037_pocetMesiacov'
+  'r035_uplatnuje_uroky'
+  | 'r035_zaplatene_uroky'
+  | 'uroky_rok_uzatvorenia'
+  | 'uroky_zaciatok_urocenia_den'
+  | 'uroky_zaciatok_urocenia_mesiac'
+  | 'uroky_zaciatok_urocenia_rok'
+  | 'uroky_dalsi_dlznik'
+  | 'uroky_pocet_dlznikov'
+  | 'uroky_dalsi_uver_uplatnuje'
+  | 'uroky_splnam_vek_kriteria'
+  | 'uroky_splnam_prijem'
+  | 'hypoteka_step'
 >
 
 export type TwoPercentUserInput = Pick<
   TaxFormUserInput,
+  | 'dve_percenta_podporujem'
   | 'XIIoddiel_uplatnujem2percenta'
   | 'splnam3per'
   | 'r142_ico'
@@ -97,7 +119,10 @@ export type TwoPercentUserInput = Pick<
 
 export type TaxBonusUserInput = Pick<
   TaxFormUserInput,
-  'ziadamVyplatitDanovyBonus' | 'ziadamVratitDanovyPreplatok' | 'iban'
+  'ziadamVyplatitDanovyBonus'
+  | 'ziadamVratitDanovyPreplatok'
+  | 'ziadamVratitDanovyBonusUroky'
+  | 'iban'
 >
 
 export type IncomeSourceCountryUserInput = Pick<

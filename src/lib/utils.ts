@@ -50,7 +50,7 @@ export const getStreetNumber = ({
 
 export const formatCurrency = (value: number): string => {
   const findPlaceForThousandsDivider = /\B(?=(\d{3})+(?!\d))/g
-  const roundNumber = roundDecimal(new Decimal(value || 0))
+  const roundNumber = decimalToString(new Decimal(value || 0))
   const formattedNumber = roundNumber
     .replace(findPlaceForThousandsDivider, ' ')
     .replace('.', ',')
@@ -92,7 +92,7 @@ export const validateRodneCislo = (value: string): boolean => {
 
 export const maxChildAgeBonusMonth = (rodneCislo: string, month: string): boolean => {
   return (
-    getRodneCisloAgeAtYearAndMonth(rodneCislo.replace(' / ', ''), TAX_YEAR, monthToKeyValue(month).value) <= MAX_CHILD_AGE_BONUS
+    getRodneCisloAgeAtYearAndMonth(rodneCislo.replace(' / ', ''), TAX_YEAR, monthToKeyValue(month).value) < MAX_CHILD_AGE_BONUS
   )
 }
 export const minChildAgeBonusMonth = (rodneCislo: string, month: string): boolean => {
@@ -166,9 +166,6 @@ export const round = (decimal: Decimal): Decimal => {
   return decimal.toDecimalPlaces(2, Decimal.ROUND_HALF_UP)
 }
 
-export const sum = (...numbers): Decimal =>
-  numbers.reduce((sum, current) => sum.add(current), new Decimal(0))
-
 export function parseInputNumber(input: string): number {
   const cleanedInput = !input || input === '' ? '0' : input.replace(',', '.')
   return Number(cleanedInput)
@@ -225,9 +222,5 @@ export const boolToString = (bool: boolean) => {
 }
 
 export const decimalToString = (decimal: Decimal) => {
-  return decimal.equals(0) ? '' : roundDecimal(decimal)
-}
-
-export const roundDecimal = (input: Decimal, decimals = 2): string => {
-  return input.toFixed(decimals)
+  return decimal.toFixed(2)
 }

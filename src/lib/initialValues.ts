@@ -5,9 +5,10 @@ import {
   EmployedUserInput,
   ChildrenUserInput,
   PensionUserInput,
-  MortgageUserInput,
+  UrokyUserInput,
   TwoPercentUserInput,
   TaxBonusUserInput,
+  RentUserInput,
 } from '../types/PageUserInputs'
 import { ChildInput, TaxFormUserInput } from '../types/TaxFormUserInput'
 import { PostponeUserInput } from '../types/PostponeUserInput'
@@ -26,7 +27,6 @@ export const partnerUserInitialValues: PartnerUserInput = {
   partner_step: 0,
   partner_podmienky: {},
   r032_partner_vlastne_prijmy: '',
-
   r032_partner_pocet_mesiacov: '',
 }
 export const personalInformationUserInputInitialValues: PersonalInformationUserInput =
@@ -52,6 +52,15 @@ export const employmentUserInputInitialValues: EmployedUserInput = {
   uhrnPovinnehoPoistnehoNaZdravotnePoistenie: '',
   udajeODanovomBonuseNaDieta: '',
   uhrnPreddavkovNaDan: '',
+}
+
+export const rentUserInputInitialValues: RentUserInput = {
+  rent: undefined,
+  vyskaPrijmovZPrenajmu: '',
+  vyskaOslobodenia: '',
+  prenajomPrijemZPrilezitostnejCinnosti: undefined,
+  vydavkyZPrenajmu: '',
+  rent_step: 0,
 }
 
 let childCounter = 0
@@ -81,14 +90,15 @@ export const pensionInitialValues: PensionUserInput = {
   zaplatene_prispevky_na_dochodok: '',
 }
 
-export const mortgageInitialValues: MortgageUserInput = {
-  r037_pocetMesiacov: '',
-  r037_zaplatene_uroky: '',
-  r037_uplatnuje_uroky: undefined,
+export const urokyInitialValues: UrokyUserInput = {
+  r035_zaplatene_uroky: '',
+  r035_uplatnuje_uroky: undefined,
+  hypoteka_step: 0,
 }
 
 export const twoPercentInitialValues: TwoPercentUserInput = {
   XIIoddiel_uplatnujem2percenta: undefined,
+  dve_percenta_podporujem: undefined,
   splnam3per: false,
   r142_ico: '',
   r142_obchMeno: '',
@@ -105,9 +115,10 @@ export const initTaxFormUserInputValues: TaxFormUserInput = {
   ...partnerUserInitialValues,
   ...personalInformationUserInputInitialValues,
   ...employmentUserInputInitialValues,
+  ...rentUserInputInitialValues,
   ...childrenUserInputInitialValues,
   ...pensionInitialValues,
-  ...mortgageInitialValues,
+  ...urokyInitialValues,
   ...twoPercentInitialValues,
   ...taxBonusInitialInput,
   ...{ datum: '' },

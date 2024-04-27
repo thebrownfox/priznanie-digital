@@ -77,9 +77,10 @@ export interface TaxForm {
   r032_partner_pocet_mesiacov?: number
 
   /** SECTION  Mortage */
-  // r037_uplatnuje_uroky?: boolean
-  // r037_zaplatene_uroky?: Decimal
-  // r037_pocetMesiacov?: number
+  r035_uplat_dan_bonus_zaplat_uroky?: boolean
+  r035_zaplatene_uroky?: Decimal
+  r035_pocet_mesiacov?: number
+  r035_datum_zacatia_urocenia_uveru?: Date
 
   /** SECTION Prijmy a poistenie  */
   /**   VIs.Príjmy z tabuľky č. 1, stĺ. 1, r. 10 TODO asi zrkadlenie do VI.Príjmy z tabuľky č. 1, stĺ. 1, r. 2*/
@@ -91,6 +92,7 @@ export interface TaxForm {
 
   /**   Deti*/
   r033?: Child[]
+  r033a: boolean
   partner_bonus_na_deti: boolean
   r034: Partner
   r034a: Decimal
@@ -108,6 +110,14 @@ export interface TaxForm {
   priloha3_r08_poistne_spolu: Decimal
   priloha3_r09_socialne: Decimal
   priloha3_r10_zdravotne: Decimal
+
+  /** SECTION Prenajom */
+  rent?: boolean
+  prenajom_oslobodenie: Decimal
+  t1r11s1?: Decimal
+  t1r11s2?: Decimal
+  t1r13s1?: Decimal
+  t1r13s2?: Decimal
 
   /** Základ dane (čiastkový základ dane)  */
   r038: Decimal
@@ -132,6 +142,10 @@ export interface TaxForm {
   r057: Decimal
   /**   Základ dane z príjmov pred znížením o nezdaniteľnú časť základu dane (r. 40
    *   + r. 57)*/
+  r058: Decimal
+  r059: Decimal
+  r060?: Decimal
+  r065?: Decimal
   r072_pred_znizenim: Decimal
   /**   Hardconuta value 3937.35 - nezdaniteľnú časť základu Ak r.72>20 507, potom
    *    r.73 má byť výsledkom max(0,9 064.094-(1/4)*r.72–r.30). Ak r72<=20 507,
@@ -187,20 +201,20 @@ export interface TaxForm {
 
   r122: Decimal
 
-  /** Riadok 112 vypĺňa daňovník, ktorý vyplnil IV. ODDIEL. Ak daňovník uplatňuje daňový bonus na zaplatené úroky podľa § 33a zákona, daňovým bonusom na zaplatené úroky podľa § 33a zákona je suma vo výške 50% zo zaplatených úrokov v príslušnom zdaňovacom období z riadku 37, najviac však do výšky 400 eur za rok. Ak obdobie úročenia úveru na bývanie počas ktorého má daňovník nárok na tento daňový bonus začalo v priebehu zdaňovacieho obdobia, uvádza sa v r. 112 suma zodpovedajúca pomernej časti daňového bonusu na zaplatené úroky z maximálnej sumy 400 eur pripadajúca na počet kalendárnych mesiacov, v ktorých vznikol nárok na jeho uplatnenie.*/
-  // r123: Decimal
-  /**   Daň (daňová povinnosť) znížená o daňový bonus a o daňový bonus na zaplatené
-   *   úroky(r. 107 - r. 112) zrkadli r118*/
+  r123: Decimal
   r124: Decimal
-  /**   Daň na úhradu vrátane zamestnávateľom nesprávne vyplateného daňového bonusu
-   *   podľa § 33 zákona33) r. 105 - r. 106 + r. 108 + r. 110 - r. 112 + r. 114 +
-   *   r. 116 + r. 117 - r. 118 - r. 119 - r. 120 - r. 121 - r. 122 - r. 123 - r.
-   *   124 (+)*/
-
+  r125: Decimal
+  r126: Decimal
+  r127: Decimal
+  r128: Decimal
+  r129: Decimal
+  r130: Decimal
   /** zrazena dan zo zamestnania */
   r131: Decimal
+  r132: Decimal
   /** Zaplatené preddavky */
   r133: Decimal
+  r134: Decimal
 
   r135_dan_na_uhradu: Decimal
   /**   Daňový preplatok znížený o zamestnávateľom nesprávne vyplatený daňový bonus
@@ -220,14 +234,16 @@ export interface TaxForm {
     obchMeno: string
     suhlasZaslUdaje: boolean
   }
-  mikrodanovnik: boolean
   datum: string
+  socZdravPoistenieDatum: string
 
   /** SECTION Danovy bonus */
   mozeZiadatVyplatitDanovyBonus: boolean
   ziadamVyplatitDanovyBonus: boolean
   mozeZiadatVratitDanovyPreplatok: boolean
   ziadamVratitDanovyPreplatok: boolean
+  mozeZiadatVratitDanovyBonusUroky: boolean
+  ziadamVratitDanovyBonusUroky: boolean
   iban: string
 
   /** Helper properties from input, that are not part of taxForm */
@@ -237,6 +253,10 @@ export interface TaxForm {
   danovyBonusNaDieta: {
     danovyBonus: Decimal
     nevyuzityDanovyBonus: Decimal
+  }
+  preddavkyNaDan: {
+    suma: Decimal
+    periodicita: string
   }
   canDonateTwoPercentOfTax: boolean
 }

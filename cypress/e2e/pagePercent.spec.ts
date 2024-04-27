@@ -9,6 +9,8 @@ import { with2percentInput } from '../../__tests__/testCases/with2percentInput'
 import { homeRoute } from '../../src/lib/routes'
 import { TaxFormUserInput } from '../../src/types/TaxFormUserInput'
 import { UserInput } from '../../src/types/UserInput'
+import path from 'path'
+import { assertUrl, formSuccessful } from './executeCase'
 
 function getInput<K extends keyof UserInput>(key: K, suffix = '') {
   return cy.get(`[data-test="${key}-input${suffix}"]`)
@@ -36,7 +38,7 @@ beforeEach(() => {
 })
 
 describe('twoPercent page', () => {
-  it('has working ui', () => {
+  it('has working ui', (done) => {
     const input = with2percentInput
 
     cy.visit(homeRoute)
@@ -72,8 +74,6 @@ describe('twoPercent page', () => {
       getInput('r032_uplatnujem_na_partnera', '-yes').click()
       next()
       cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
-      next()
-      cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
       next()
       cy.get('[data-test="partner_podmienky.1-input"]').click()
       next()
@@ -129,6 +129,16 @@ describe('twoPercent page', () => {
     } else {
       getInput('platil_prispevky_na_dochodok', '-no').click()
     }
+
+    next()
+
+    /* SECTION Prenajom */
+    getInput('rent', '-no').click()
+
+    next()
+
+    /* SECTION Uroky */
+    getInput('r035_uplatnuje_uroky', '-no').click()
 
     next()
 
@@ -136,23 +146,74 @@ describe('twoPercent page', () => {
     next()
     getError().should('have.length', 1)
 
-    // Must have imported data to show checkbox!!!!! //
-
     // When presses yes, additional fields appear
-    cy.get('[data-test=XIIoddiel_uplatnujem2percenta-input-yes]').click()
+    cy.get('[data-test=dve_percenta_podporujem-inu-input]').click()
 
     // All aditional fields should be required
     next()
     getError().should('have.length', 2)
 
     // Type to input
-    typeToInput('r142_obchMeno', with2percentInput)
-    typeToInput('r142_ico', with2percentInput)
+    getInput('r142_obchMeno').type('Domka - Združenie saleziánskej mládeže, stredisko Banská Bystrica')
+    getInput('r142_ico').type('35983558')
     cy.get('[data-test="XIIoddiel_suhlasZaslUdaje-input"]').click()
 
     next()
+
+    /**  SECTION Osobne udaje */
+
+    typeToInput('r001_dic', input)
+
+    const naceNumber = input.r003_nace.match(/^(\d+)/)
+    if (naceNumber) {
+      getInput('r003_nace').type(naceNumber[1])
+      cy.contains(input.r003_nace).click()
+    } else {
+      typeToInput('r003_nace', input)
+    }
+
+    typeToInput('r005_meno', input)
+    if (input.r006_titul) {
+      getInput('r006_titul').type(input.r006_titul)
+      getInput('r006_titul_za').type(input.r006_titul_za)
+    }
+    typeToInput('r004_priezvisko', input)
+    typeToInput('r007_ulica', input)
+    typeToInput('r008_cislo', input)
+    typeToInput('r009_psc', input)
+    typeToInput('r010_obec', input)
+    typeToInput('r011_stat', input)
+
+    next()
+    assertUrl('/suhrn')
+    next()
+    assertUrl('/vysledky')
+    next()
+
+    cy.get('[data-test="debug-download"]').click()
+
+    const downloadsFolder = Cypress.config('downloadsFolder')
+    const filePath = path.join(downloadsFolder, 'file.xml')
+
+    /**  Validate our results with the FS form */
+    cy.visit('/form/form.572.html')
+
+    const stub = cy.stub()
+    cy.on('window:alert', stub)
+
+    cy.get('#form-button-load').click()
+    cy.get('#form-buttons-load-dialog > input').selectFile(filePath)
+
+    cy.get('#form-buttons-load-dialog-confirm > .ui-button-text').click()
+    cy.get('#cmbDic1').should('have.value', input.r001_dic) // validate the form has laoded by checking DIC value
+    cy.get('#tbico152').should('have.value', '35983558')
+    cy.get('#tbObchMeno152').should('have.value', 'Domka - Združenie saleziánskej mládeže, stredisko Banská Bystrica')
+    cy.get('#form-button-validate').click().should(formSuccessful(stub))
+    cy.get('#errorsContainer')
+      .should((el) => expect(el.text()).to.be.empty)
+      .then(() => done())
   })
-  it('with autoform', () => {
+  it.only('with autoform', (done) => {
     const input = with2percentInput
 
     cy.visit(homeRoute)
@@ -188,8 +249,6 @@ describe('twoPercent page', () => {
       getInput('r032_uplatnujem_na_partnera', '-yes').click()
       next()
       cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
-      next()
-      cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
       next()
       cy.get('[data-test="partner_podmienky.1-input"]').click()
       next()
@@ -248,8 +307,18 @@ describe('twoPercent page', () => {
 
     next()
 
+    /* SECTION Prenajom */
+    getInput('rent', '-no').click()
+
+    next()
+
+    /* SECTION Uroky */
+    getInput('r035_uplatnuje_uroky', '-no').click()
+
+    next()
+
     // When presses yes, additional fields appear
-    cy.get('[data-test=XIIoddiel_uplatnujem2percenta-input-yes]').click()
+    cy.get('[data-test=dve_percenta_podporujem-inu-input]').click()
 
     /** With autoform */
     getInput('r142_obchMeno').type('Lifestarter')
@@ -261,6 +330,59 @@ describe('twoPercent page', () => {
     cy.get('[data-test="XIIoddiel_suhlasZaslUdaje-input"]').click()
 
     next()
+
+    /**  SECTION Osobne udaje */
+
+    typeToInput('r001_dic', input)
+
+    const naceNumber = input.r003_nace.match(/^(\d+)/)
+    if (naceNumber) {
+      getInput('r003_nace').type(naceNumber[1])
+      cy.contains(input.r003_nace).click()
+    } else {
+      typeToInput('r003_nace', input)
+    }
+
+    typeToInput('r005_meno', input)
+    if (input.r006_titul) {
+      getInput('r006_titul').type(input.r006_titul)
+      getInput('r006_titul_za').type(input.r006_titul_za)
+    }
+    typeToInput('r004_priezvisko', input)
+    typeToInput('r007_ulica', input)
+    typeToInput('r008_cislo', input)
+    typeToInput('r009_psc', input)
+    typeToInput('r010_obec', input)
+    typeToInput('r011_stat', input)
+
+    next()
+    assertUrl('/suhrn')
+    next()
+    assertUrl('/vysledky')
+    next()
+
+    cy.get('[data-test="debug-download"]').click()
+
+    const downloadsFolder = Cypress.config('downloadsFolder')
+    const filePath = path.join(downloadsFolder, 'file.xml')
+
+    /**  Validate our results with the FS form */
+    cy.visit('/form/form.572.html')
+
+    const stub = cy.stub()
+    cy.on('window:alert', stub)
+
+    cy.get('#form-button-load').click()
+    cy.get('#form-buttons-load-dialog > input').selectFile(filePath)
+
+    cy.get('#form-buttons-load-dialog-confirm > .ui-button-text').click()
+    cy.get('#cmbDic1').should('have.value', input.r001_dic) // validate the form has laoded by checking DIC value
+    cy.get('#tbico152').should('have.value', '50718274')
+    cy.get('#tbObchMeno152').should('have.value', 'Lifestarter')
+    cy.get('#form-button-validate').click().should(formSuccessful(stub))
+    cy.get('#errorsContainer')
+      .should((el) => expect(el.text()).to.be.empty)
+      .then(() => done())
   })
   it('works with no', () => {
     const input = with2percentInput
@@ -299,8 +421,6 @@ describe('twoPercent page', () => {
       next()
       cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
       next()
-      cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
-      next()
       cy.get('[data-test="partner_podmienky.1-input"]').click()
       next()
       typeToInput('r032_partner_vlastne_prijmy', input)
@@ -358,12 +478,22 @@ describe('twoPercent page', () => {
 
     next()
 
-    cy.get('[data-test=XIIoddiel_uplatnujem2percenta-input-no]').click()
+    /* SECTION Prenajom */
+    getInput('rent', '-no').click()
+
+    next()
+
+    /* SECTION Uroky */
+    getInput('r035_uplatnuje_uroky', '-no').click()
+
+    next()
+
+    cy.get('[data-test=dve_percenta_podporujem-input-no]').click()
     next()
     getError().should('have.length', 0)
 
   })
-  it('works with Slovensko.Digital pre-fill', () => {
+  it('works with Slovensko.Digital pre-fill', (done) => {
     const input = with2percentInput
 
     cy.visit(homeRoute)
@@ -400,8 +530,6 @@ describe('twoPercent page', () => {
       next()
       cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
       next()
-      cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
-      next()
       cy.get('[data-test="partner_podmienky.1-input"]').click()
       next()
       typeToInput('r032_partner_vlastne_prijmy', input)
@@ -459,11 +587,71 @@ describe('twoPercent page', () => {
 
     next()
 
-    cy.get('[data-test=prefill-slovensko-digital]').click()
-
-    getInput('r142_obchMeno').should('contain.value', 'Slovensko.Digital')
-    getInput('r142_ico').should('contain.value', '50 158 635')
+    /* SECTION Prenajom */
+    getInput('rent', '-no').click()
 
     next()
+
+    /* SECTION Uroky */
+    getInput('r035_uplatnuje_uroky', '-no').click()
+
+    next()
+
+    cy.get('[data-test=dve_percenta_podporujem-sk-digital-input]').click()
+
+    next()
+
+    /**  SECTION Osobne udaje */
+
+    typeToInput('r001_dic', input)
+
+    const naceNumber = input.r003_nace.match(/^(\d+)/)
+    if (naceNumber) {
+      getInput('r003_nace').type(naceNumber[1])
+      cy.contains(input.r003_nace).click()
+    } else {
+      typeToInput('r003_nace', input)
+    }
+
+    typeToInput('r005_meno', input)
+    if (input.r006_titul) {
+      getInput('r006_titul').type(input.r006_titul)
+      getInput('r006_titul_za').type(input.r006_titul_za)
+    }
+    typeToInput('r004_priezvisko', input)
+    typeToInput('r007_ulica', input)
+    typeToInput('r008_cislo', input)
+    typeToInput('r009_psc', input)
+    typeToInput('r010_obec', input)
+    typeToInput('r011_stat', input)
+
+    next()
+    assertUrl('/suhrn')
+    next()
+    assertUrl('/vysledky')
+    next()
+
+    cy.get('[data-test="debug-download"]').click()
+
+    const downloadsFolder = Cypress.config('downloadsFolder')
+    const filePath = path.join(downloadsFolder, 'file.xml')
+
+    /**  Validate our results with the FS form */
+    cy.visit('/form/form.572.html')
+
+    const stub = cy.stub()
+    cy.on('window:alert', stub)
+
+    cy.get('#form-button-load').click()
+    cy.get('#form-buttons-load-dialog > input').selectFile(filePath)
+
+    cy.get('#form-buttons-load-dialog-confirm > .ui-button-text').click()
+    cy.get('#cmbDic1').should('have.value', input.r001_dic) // validate the form has laoded by checking DIC value
+    cy.get('#tbico152').should('have.value', '50158635')
+    cy.get('#tbObchMeno152').should('have.value', 'Slovensko.Digital')
+    cy.get('#form-button-validate').click().should(formSuccessful(stub))
+    cy.get('#errorsContainer')
+      .should((el) => expect(el.text()).to.be.empty)
+      .then(() => done())
   })
 })

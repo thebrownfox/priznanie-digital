@@ -50,8 +50,6 @@ export const bugReport1Input: E2eTestUserInput = {
   ],
   platil_prispevky_na_dochodok: false,
   zaplatene_prispevky_na_dochodok: '',
-  r037_pocetMesiacov: '',
-  r037_zaplatene_uroky: '',
   expectNgoDonationValue: false,
   r142_ico: '',
   r142_obchMeno: '',
@@ -59,7 +57,6 @@ export const bugReport1Input: E2eTestUserInput = {
   iban: 'anon',
   datum: '',
   partner_spolocna_domacnost: true,
-  partner_bonus_uplatneny: false,
   ...{
     r001_dic: '233123123',
     r003_nace: '62010 - Počítačové programovanie',

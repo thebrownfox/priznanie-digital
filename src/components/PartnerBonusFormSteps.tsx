@@ -104,15 +104,6 @@ export const HouseholdQuestion = ({ disabled }) => (
   />
 )
 
-export const AlreadyAppliedQuestion = ({ disabled }) => (
-  <BooleanRadio
-    name="partner_bonus_uplatneny"
-    title="Uplatnili ste si zvýhodnenie inou cestou?"
-    disabled={disabled}
-    hint="Zvýhodnenie na manželku / manžela si môžete uplatniť aj prostredníctvom zamestnávateľa pri ročnom zúčtovaní dane alebo vlastným daňovým priznaním."
-  />
-)
-
 export const ConditionsQuestion = ({ disabled }) => (
   <div className="govuk-form-group">
     <legend className="govuk-fieldset__legend govuk-fieldset__legend--l">
@@ -132,21 +123,16 @@ export const ConditionsQuestion = ({ disabled }) => (
     />
     <Checkbox
       name="partner_podmienky.3"
-      label="Poberá príspevok na opatrovanie ťažko zdravotne postihnutého"
-      disabled={disabled}
-    />
-    <Checkbox
-      name="partner_podmienky.4"
       label="Poberal/a príspevok na opatrovanie ťažko zdravotne postihnutého"
       disabled={disabled}
     />
     <Checkbox
-      name="partner_podmienky.5"
+      name="partner_podmienky.4"
       label="Bol/a evidovaný/á ako uchádzač o zamestnanie"
       disabled={disabled}
     />
     <Checkbox
-      name="partner_podmienky.6"
+      name="partner_podmienky.5"
       label="Považuje sa za občana so zdravotným postihnutím alebo s ťažkým zdravotným postihnutím"
       disabled={disabled}
     />

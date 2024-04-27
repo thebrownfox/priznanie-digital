@@ -52,8 +52,7 @@ export const bugReport6Input: E2eTestUserInput = {
   ],
   "platil_prispevky_na_dochodok": false,
   "zaplatene_prispevky_na_dochodok": "",
-  "r037_pocetMesiacov": "",
-  "r037_zaplatene_uroky": "",
+
   "splnam3per": false,
   "r142_ico": "",
   "r142_obchMeno": "",
@@ -62,7 +61,6 @@ export const bugReport6Input: E2eTestUserInput = {
   "ziadamVyplatitDanovyBonus": true,
   "datum": "",
   "partner_spolocna_domacnost": true,
-  "partner_bonus_uplatneny": false,
   "r006_titul_za": "",
   "ziadamVratitDanovyPreplatok": true
 }

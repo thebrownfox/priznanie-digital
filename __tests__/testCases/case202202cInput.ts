@@ -26,11 +26,6 @@ export const case202202cInput: E2eTestUserInput = {
   udajeODanovomBonuseNaDieta: '0',
   employed: false,
 
-  /** SECTION Mortgage */
-  r037_uplatnuje_uroky: true,
-  r037_zaplatene_uroky: '200',
-  r037_pocetMesiacov: '12',
-
   /** SECTION Pension */
   platil_prispevky_na_dochodok: false,
   zaplatene_prispevky_na_dochodok: '0',
@@ -42,7 +37,6 @@ export const case202202cInput: E2eTestUserInput = {
   r032_partner_vlastne_prijmy: '50',
   r032_uplatnujem_na_partnera: true,
   partner_spolocna_domacnost: true,
-  partner_bonus_uplatneny: false,
   partner_podmienky: { '1': true },
 
   /** SECTION Children */

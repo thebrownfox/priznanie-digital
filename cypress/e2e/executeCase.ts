@@ -15,7 +15,6 @@ import {
   postponeHomeRoute,
 } from '../../src/lib/routes'
 import { PostponeUserInput } from '../../src/types/PostponeUserInput'
-import Decimal from 'decimal.js'
 import path from 'path'
 import { E2eTestUserInput } from '../../src/types/E2eTestUserInput'
 
@@ -38,11 +37,11 @@ const next = () => {
   return cy.contains('Pokračovať').click()
 }
 
-const assertUrl = (url: Route | PostponeRoute) => {
+export const assertUrl = (url: Route | PostponeRoute) => {
   cy.url().should('include', url)
 }
 
-const formSuccessful = (stub) => () => {
+export const formSuccessful = (stub) => () => {
   expect(stub).to.be.calledWith('Naplnenie formulára prebehlo úspešne')
 }
 
@@ -108,8 +107,6 @@ const executeTestCase = (testCase: string) => {
           next()
           cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
           next()
-          cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
-          next()
           cy.get('[data-test="partner_podmienky.1-input"]').click()
           next()
           typeToInput('r032_partner_vlastne_prijmy', input)
@@ -156,10 +153,24 @@ const executeTestCase = (testCase: string) => {
           next()
           cy.url().then(url => {
             if (input.partner_bonus_na_deti) {
-              
+              getInput('partner_bonus_na_deti_chce_uplatnit', '-yes').click()
+              getInput('partner_bonus_na_deti', '-yes').click()
+              typeToInput('r034_priezvisko_a_meno', input)
+              typeToInput('r034_rodne_cislo', input)
+              cy.get(
+                `[data-test="partner_bonus_na_deti_od-select"]`,
+              ).select(input.partner_bonus_na_deti_od)
+              cy.get(
+                `[data-test="partner_bonus_na_deti_do-select"]`,
+              ).select(input.partner_bonus_na_deti_do)
+              cy.get(
+                `[data-test="partner_bonus_na_deti_typ_prijmu-select"]`,
+              ).select("1")
+              typeToInput('r034a', input)
+              next()
             } else {
               if (!url.includes('/dochodok')) {
-                getInput('partner_bonus_na_deti', '-no').click()
+                getInput('partner_bonus_na_deti_chce_uplatnit', '-no').click()
                 next()
               }
             }
@@ -181,27 +192,84 @@ const executeTestCase = (testCase: string) => {
 
         next()
 
-        // TODO Reanable with mortgage feature
-        // /**  SECTION Hypoteka */
-        // assertUrl('/hypoteka')
+        /**  SECTION Prenajom */
+        assertUrl('/prenajom')
 
-        // if (input.r037_uplatnuje_uroky) {
-        //   getInput('r037_uplatnuje_uroky', '-yes').click()
-        //   typeToInput('r037_zaplatene_uroky', input)
-        //   typeToInput('r037_pocetMesiacov', input)
-        // } else {
-        //   getInput('r037_uplatnuje_uroky', '-no').click()
-        // }
+        if (input.rent) {
+          getInput('rent', '-yes').click()
+          next()
+          typeToInput('vyskaPrijmovZPrenajmu', input)
+          next()
+          typeToInput('vydavkyZPrenajmu', input)
+          next()
+          if (input.prenajomPrijemZPrilezitostnejCinnosti) {
+            getInput('prenajomPrijemZPrilezitostnejCinnosti', '-yes').click()
+            next()
+            getInput('vyskaOslobodenia').should('have.value', '')
+            typeToInput('vyskaOslobodenia', input)
+            next()
+          } else {
+            getInput('prenajomPrijemZPrilezitostnejCinnosti', '-no').click()
+            next()
+            getInput('vyskaOslobodenia').should('have.value', '500')
+            next()
+          }
+        } else {
+          getInput('rent', '-no').click()
+        }
 
-        // next()
+        next()
+
+        /**  SECTION Hypoteka */
+        assertUrl('/uroky')
+
+        if (input.r035_uplatnuje_uroky) {
+          getInput('r035_uplatnuje_uroky', '-yes').click()
+
+          next()
+
+          getInput('uroky_dalsi_uver_uplatnuje', '-no').click()
+
+          next()
+
+          typeToInput('uroky_rok_uzatvorenia', input)
+          typeToInput('uroky_zaciatok_urocenia_den', input)
+          typeToInput('uroky_zaciatok_urocenia_mesiac', input)
+          typeToInput('uroky_zaciatok_urocenia_rok', input)
+
+          next()
+
+          if (input.uroky_dalsi_dlznik) {
+            getInput('uroky_dalsi_dlznik', '-yes').click()
+            typeToInput('uroky_pocet_dlznikov', input)
+          } else {
+            getInput('uroky_dalsi_dlznik', '-no').click()
+          }
+
+          next()
+
+          getInput('uroky_splnam_vek_kriteria', '-yes').click()
+
+          next()
+
+          getInput('uroky_splnam_prijem', '-yes').click()
+
+          next()
+
+          typeToInput('r035_zaplatene_uroky', input)
+        } else {
+          getInput('r035_uplatnuje_uroky', '-no').click()
+        }
+
+        next()
 
         /**  SECTION Two percent */
         assertUrl('/dve-percenta')
         if (input.expectNgoDonationValue) {
           cy.get('.govuk-hint').contains(input.percent2)
 
-          if (input.XIIoddiel_uplatnujem2percenta) {
-            getInput('XIIoddiel_uplatnujem2percenta', '-yes').click()
+          if (input.dve_percenta_podporujem) {
+            cy.get('[data-test="dve_percenta_podporujem-inu-input"]').click()
 
             cy.get('label[for="splnam3per"]').contains(input.percent3)
 
@@ -216,7 +284,7 @@ const executeTestCase = (testCase: string) => {
               cy.get('[data-test="XIIoddiel_suhlasZaslUdaje-input"]').click()
             }
           } else {
-            getInput('XIIoddiel_uplatnujem2percenta', '-no').click()
+            cy.get('[data-test="dve_percenta_podporujem-input-no"]').click()
           }
         }
 
@@ -282,6 +350,23 @@ const executeTestCase = (testCase: string) => {
           next()
         }
 
+        if (taxForm.mozeZiadatVratitDanovyBonusUroky) {
+          /** SECTION IBAN */
+          assertUrl('/iban')
+
+          cy.contains('Žiadam o vyplatenie daňového bonusu na zaplatené úroky')
+          cy.get('[data-test=ineligible-message]').should('not.exist')
+
+          if (input.ziadamVratitDanovyBonusUroky) {
+            getInput('ziadamVratitDanovyBonusUroky', '-yes').click()
+            typeToInput('iban', input)
+          } else {
+            getInput('ziadamVratitDanovyBonusUroky', '-no').click()
+          }
+
+          next()
+        }
+
         if (taxForm.mozeZiadatVratitDanovyPreplatok) {
           /** SECTION IBAN */
           assertUrl('/iban')
@@ -304,20 +389,33 @@ const executeTestCase = (testCase: string) => {
 
         cy.contains('Daň na úhradu')
 
-        cy.get('.govuk-table__cell').contains(
-          formatCurrency(
-            new Decimal(parseInputNumber(input.t1r10_prijmy))
-              .plus(
-                parseInputNumber(input.uhrnPrijmovOdVsetkychZamestnavatelov),
-              )
-              .toNumber(),
-          ),
+        cy.get('[data-test="prijmy"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r036.plus(taxForm.r039).toNumber())
         )
 
-        cy.get('[data-test="r136_danovy_preplatok"]').contains(
-          formatCurrency(taxForm.r136_danovy_preplatok)
+        cy.get('[data-test="pausalneVydavky"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r040.minus(taxForm.vydavkyPoistPar6ods11_ods1a2).toNumber())
         )
 
+        cy.get('[data-test="zakladDane"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r078_zaklad_dane_zo_zamestnania.plus(taxForm.r092).toNumber())
+        )
+
+        cy.get('[data-test="danSpolu"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r116_dan.toNumber())
+        )
+
+        cy.get('[data-test="danovyBonusNaDeti"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r117.toNumber())
+        )
+
+        cy.get('[data-test="danovyBonusPreplatokNaVyplatenie"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r121.plus(taxForm.r136_danovy_preplatok).plus(taxForm.r127).toNumber())
+        )
+
+        cy.get('[data-test="danNaUhradu"]').should('have.length', 1).contains(
+          formatCurrency(taxForm.r135_dan_na_uhradu.toNumber())
+        )
         next()
 
         /** SECTION Download */

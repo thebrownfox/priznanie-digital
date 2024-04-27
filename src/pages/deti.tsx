@@ -22,6 +22,7 @@ import {
   maxChildAgeBonusMonth,
   minChildAgeBonusMonth,
   numberInputRegexp,
+  parseInputNumber,
 } from '../lib/utils'
 import { Page } from '../components/Page'
 import { ErrorSummary } from '../components/ErrorSummary'
@@ -39,6 +40,8 @@ import RadioGroup from "../components/radio/RadioGroup";
 import Radio from "../components/radio/Radio";
 import RadioConditional from "../components/radio/RadioConditional";
 import Decimal from 'decimal.js'
+import { Warning } from '../components/Warning'
+import { ExternalLink } from '../components/ExternalLink'
 
 const Deti: Page<ChildrenUserInput> = ({
   setTaxFormUserInput,
@@ -75,7 +78,7 @@ const Deti: Page<ChildrenUserInput> = ({
             if (danovyBonusNaDieta.nevyuzityDanovyBonus.equals(new Decimal(0))) {
               router.push(nextRoute)
             } else {
-              if (values.partner_bonus_na_deti === false) {
+              if (values.partner_bonus_na_deti === false || values.partner_bonus_na_deti_chce_uplatnit === false) {
                 router.push(nextRoute)
               } else if (values.partner_bonus_na_deti === true) {
                 const errors = validate(values)
@@ -329,16 +332,34 @@ const Deti: Page<ChildrenUserInput> = ({
   )
 }
 
+const AttachmentWarning = ({ prijem }) => {
+  if (prijem === "3") {
+    return (
+      <Warning>
+        Ako prílohu k vášmu daňovému priznaniu je potrebné priložiť kópiu dokladu o vykonanom ročnom zúčtovaní preddavkov druhej oprávnenej osoby.
+      </Warning>
+    )
+  }
+  if (prijem === "4") {
+    return (
+      <Warning>
+        Ako prílohu k vášmu daňovému priznani je potrebné priložiť kópiu dokladu preukazujúceho výšku základu dane druhej oprávnenej osoby.
+      </Warning>
+    )
+  }
+  return null
+}
+
 const getIncomeHint = (value: string): string => {
   switch (value) {
     case "0":
       return ''
     case "1":
-      return 'Formulár daňového priznania k dani z príjmov fyzickej osoby - typ A riadok 39'
+      return 'Výšku príjmov zistíte z formuláru daňového priznania FO typ A riadok 39'
     case "2":
-      return 'Formulár daňového priznania k dani z príjmov fyzickej osoby - typ B riadok 72'
+      return 'Výšku príjmov zistíte z formuláru daňového priznania FO typ B riadok 72'
     case "3":
-      return 'Ročné zúčtovanie preddavkov na daň riadok 3'
+      return 'Výšku príjmov zistíte z ročného zúčtovania preddavkov na daň riadok 3.'
     default:
       break;
   }
@@ -407,8 +428,8 @@ const ChildForm = ({ index }: ChildFormProps) => {
         <Radio name={`children[${index}]-bonus-interval-input-partyear`} label="V niektorých mesiacoch" value="partYear" disabled={!validateRodneCislo(rodneCislo) || monthOptions.length === 0} />
         <RadioConditional forValue="partYear">
           <legend className="govuk-fieldset__legend govuk-fieldset__legend--s">
+            <p className='govuk-hint'>Daňový bonus si môžete uplatniť v mesiacoch {monthOptions[0]} až {monthOptions[monthOptions.length - 1]}</p>
           </legend>
-          <p className='govuk-hint'>Daňový bonus si môžete uplatniť v mesiacoch {monthOptions[0]} až {monthOptions[monthOptions.length - 1]}</p>
           <div
             // className={classnames('govuk-form-group', styles.inlineFieldContainer)}
           >
@@ -506,6 +527,8 @@ export const validate = (values: ChildrenUserInput) => {
           'Zadajte vlastné príjmy manželky / manžela'
       } else if (!values.r034a.match(numberInputRegexp)) {
         errors.r034a = 'Zadajte príjmy vo formáte 123,45'
+      } else if (new Decimal(parseInputNumber(values.r034a)).lessThanOrEqualTo(0)) {
+        errors.r034a = 'Príjem musí byť viac ako 0'
       }
     }
   }

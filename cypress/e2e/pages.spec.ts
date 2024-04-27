@@ -14,7 +14,7 @@ import { withPensionInput } from '../../__tests__/testCases/withPensionInput'
 import { withPartnerInput } from '../../__tests__/testCases/withPartnerInput'
 import { withBonusInput } from '../../__tests__/testCases/withBonusInput'
 import { UserInput } from '../../src/types/UserInput'
-import { MAX_CHILD_AGE_BONUS, TAX_YEAR } from '../../src/lib/calculation'
+import { MAX_CHILD_AGE_BONUS, TAX_YEAR, UROKY_POCET_ROKOV } from '../../src/lib/calculation'
 
 function getInput<K extends keyof UserInput>(key: K, suffix = '') {
   return cy.get(`[data-test="${key}-input${suffix}"]`)
@@ -283,18 +283,7 @@ describe('Partner page', () => {
     cy.get('[data-test=partner_spolocna_domacnost-input-yes]').click()
     next()
     cy.get('[data-test=ineligible-message]').should('not.exist')
-    getInput('partner_bonus_uplatneny', '-yes').should('exist')
 
-    // Click radio, continue to see ineligible message
-    cy.get('[data-test=partner_bonus_uplatneny-input-yes]').click()
-    next()
-    cy.get('[data-test=ineligible-message]').should('exist')
-
-    // Go back and change answer, continue to see more fields
-    cy.get('button').contains('Späť').click()
-    cy.get('[data-test=partner_bonus_uplatneny-input-no]').click()
-    next()
-    cy.get('[data-test=ineligible-message]').should('not.exist')
     cy.get('[data-test="partner_podmienky.1-input"]').should('exist')
 
     // Continue to see ineligible message
@@ -440,7 +429,7 @@ describe('Children page', () => {
     )
 
     next()
-    getInput('partner_bonus_na_deti', '-no').click()
+    getInput('partner_bonus_na_deti_chce_uplatnit', '-no').click()
 
     next()
     assertUrl('/dochodok')
@@ -528,7 +517,7 @@ describe('Children page', () => {
     cy.get('[data-test="remove-child-2"]').click()
 
     next()
-    getInput('partner_bonus_na_deti', '-no').click()
+    getInput('partner_bonus_na_deti_chce_uplatnit', '-no').click()
     next()
     assertUrl('/dochodok')
   })
@@ -601,7 +590,7 @@ describe('Children page', () => {
 
     cy.get('[data-test="children[0].priezviskoMeno-input"]').type("John Doe")
 
-    cy.get('[data-test="children[0].rodneCislo-input"]').type('9709077708')
+    cy.get('[data-test="children[0].rodneCislo-input"]').type('980912/2532')
     cy.contains('Daňový bonus si môžete uplatniť v mesiacoch Január až September')
     cy.get('[data-test="children[0].monthFrom-select"]>option').should('have.length', 9)
     cy.get('[data-test="children[0].monthTo-select"]>option').should('have.length', 9)
@@ -626,8 +615,7 @@ describe('Pension page', () => {
     // When presses no, continues to next page
     cy.get('[data-test=platil_prispevky_na_dochodok-input-no]').click()
     next()
-    next()
-    assertUrl('/osobne-udaje')
+    assertUrl('/prenajom')
 
     //  Go back to our page
     cy.visit('/dochodok')
@@ -642,8 +630,137 @@ describe('Pension page', () => {
     typeToInput('zaplatene_prispevky_na_dochodok', withPensionInput)
 
     next()
+    assertUrl('/prenajom')
+  })
+})
+
+describe('Uroky page', () => {
+  it('has working ui', () => {
+    cy.visit('/uroky')
+
+    // Back button should work and be the correct page
+    cy.get('[data-test=back]').click()
+    assertUrl('/prenajom')
+
+    //  Go back to our page
+    cy.visit('/uroky')
+
+    // Shows error, when presses next without interaction
     next()
-    assertUrl('/osobne-udaje')
+    getError().should('have.length', 1)
+
+    // When presses no, can continue to next page
+    cy.get('[data-test=r035_uplatnuje_uroky-input-no]').click()
+    next()
+    assertUrl('/dve-percenta')
+  })
+
+  it('determines eligibility', () => {
+    cy.visit('/uroky')
+
+    // When presses yes, additional fields appears
+    cy.get('[data-test=r035_uplatnuje_uroky-input-yes]').click()
+    next()
+
+    getInput('uroky_dalsi_uver_uplatnuje', '-yes').should('exist')
+
+    // Should show error if not filled in
+    next()
+    getError().should('have.length', 1)
+
+    // Click radio, continue to see ineligible message
+    cy.get('[data-test=uroky_dalsi_uver_uplatnuje-input-yes]').click()
+    next()
+    cy.get('[data-test=ineligible-message]').should('exist')
+    next()
+    assertUrl('/dve-percenta')
+    cy.get('[data-test=back]').click()
+
+    // Go back and change answer, continue to see more fields
+    cy.get('button').contains('Späť').click()
+    cy.get('[data-test=uroky_dalsi_uver_uplatnuje-input-no]').click()
+    next()
+    cy.get('[data-test=ineligible-message]').should('not.exist')
+
+    cy.get('[data-test="uroky_rok_uzatvorenia-input"]').should('exist')
+
+    cy.get('[data-test="uroky_zaciatok_urocenia_den-input"]').should('exist')
+    cy.get('[data-test="uroky_zaciatok_urocenia_mesiac-input"]').should('exist')
+    cy.get('[data-test="uroky_zaciatok_urocenia_rok-input"]').should('exist')
+
+    next()
+    getError().should('have.length', 4)
+
+    getInput('uroky_rok_uzatvorenia').type((TAX_YEAR-UROKY_POCET_ROKOV - 1).toString())
+    getInput('uroky_zaciatok_urocenia_den').type('1')
+    getInput('uroky_zaciatok_urocenia_mesiac').type('2')
+    getInput('uroky_zaciatok_urocenia_rok').type((TAX_YEAR-2).toString())
+
+    next()
+    cy.get('[data-test=ineligible-message]').should('exist')
+
+    next()
+    assertUrl('/dve-percenta')
+    cy.get('[data-test=back]').click()
+
+    cy.get('button').contains('Späť').click()
+
+    getInput('uroky_rok_uzatvorenia').clear().type((TAX_YEAR-UROKY_POCET_ROKOV).toString())
+
+    next()
+
+    next()
+    getError().should('have.length', 1)
+
+    cy.get('[data-test=uroky_dalsi_dlznik-input-yes]').click()
+
+    cy.get('[data-test="uroky_pocet_dlznikov-input"]').should('exist')
+
+    getInput('uroky_pocet_dlznikov').type('2')
+
+    next()
+
+    next()
+
+    getError().should('have.length', 1)
+
+    cy.get('[data-test=uroky_splnam_vek_kriteria-input-no]').click()
+
+    next()
+    cy.get('[data-test=ineligible-message]').should('exist')
+    next()
+    assertUrl('/dve-percenta')
+    cy.get('[data-test=back]').click()
+    cy.get('button').contains('Späť').click()
+
+    cy.get('[data-test=uroky_splnam_vek_kriteria-input-yes]').click()
+
+    next()
+
+    next()
+    getError().should('have.length', 1)
+    cy.get('[data-test=uroky_splnam_prijem-input-no]').click()
+    next()
+    cy.get('[data-test=ineligible-message]').should('exist')
+    next()
+    assertUrl('/dve-percenta')
+    cy.get('[data-test=back]').click()
+    cy.get('button').contains('Späť').click()
+    cy.get('[data-test=uroky_splnam_prijem-input-yes]').click()
+    next()
+
+    next()
+    getError().should('have.length', 1)
+
+    getInput('r035_zaplatene_uroky').type('a')
+
+    next()
+    getError().should('have.length', 1)
+
+    getInput('r035_zaplatene_uroky').clear().type('123.41')
+
+    next()
+    assertUrl('/dve-percenta')
   })
 })
 
@@ -684,7 +801,6 @@ describe('Results page', () => {
     cy.visit('/vysledky')
 
     cy.get('h1').contains('Výpočet dane za rok')
-    cy.get('h2').contains('Stručný prehľad')
   })
 })
 
@@ -806,8 +922,10 @@ describe('Summary page', () => {
     '/zamestnanie',
     '/partner',
     '/deti',
+    '/deti',
     '/dochodok',
-    // '/hypoteka',
+    '/uroky',
+    '/prenajom',
     '/osobne-udaje',
   ].forEach((link: Route, index) => {
     it(`has working edit link to ${link}`, () => {

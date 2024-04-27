@@ -61,15 +61,24 @@ export interface TaxFormUserInput {
   r032_partner_pocet_mesiacov?: string
   partner_step?: number
   partner_spolocna_domacnost?: boolean
-  partner_bonus_uplatneny?: boolean
   partner_podmienky?: Record<string, boolean>
 
   /** SECTION  Mortage */
-  r037_uplatnuje_uroky?: boolean
-  r037_zaplatene_uroky?: string
-  r037_pocetMesiacov?: string
+  r035_uplatnuje_uroky?: boolean
+  r035_zaplatene_uroky?: string
+  hypoteka_step?: number
+  uroky_rok_uzatvorenia?: string
+  uroky_zaciatok_urocenia_den?: string
+  uroky_zaciatok_urocenia_mesiac?: string
+  uroky_zaciatok_urocenia_rok?: string
+  uroky_dalsi_dlznik?: boolean
+  uroky_pocet_dlznikov?: string
+  uroky_dalsi_uver_uplatnuje?: boolean
+  uroky_splnam_vek_kriteria?: boolean
+  uroky_splnam_prijem?: boolean
 
   /** SECTION Prijmy a poistenie  */
+  // TODO: rename t1r10_prijmy to t1r2_prijmy
   t1r10_prijmy: string
   priloha3_r11_socialne: string
   priloha3_r13_zdravotne: string
@@ -83,8 +92,17 @@ export interface TaxFormUserInput {
   uhrnPreddavkovNaDan?: string
   udajeODanovomBonuseNaDieta?: string
 
+  /** SECTION Prenajom */
+  rent?: boolean
+  vyskaPrijmovZPrenajmu?: string
+  prenajomPrijemZPrilezitostnejCinnosti?: boolean
+  vyskaOslobodenia?: string
+  vydavkyZPrenajmu?: string
+  rent_step?: number
+
   /** SECTION  Deti*/
   hasChildren?: boolean
+  partner_bonus_na_deti_chce_uplatnit?: boolean
   partner_bonus_na_deti?: boolean
   r034_priezvisko_a_meno?: string
   r034_rodne_cislo?: string
@@ -95,6 +113,7 @@ export interface TaxFormUserInput {
   children: ChildInput[]
 
   /** SECTION  Dve percenta */
+  dve_percenta_podporujem?: "ano-sk-digital"| "ano-inu" | "nie"  
   XIIoddiel_uplatnujem2percenta?: boolean
   splnam3per?: boolean
   r142_ico?: string
@@ -104,6 +123,7 @@ export interface TaxFormUserInput {
   /** SECTION Danovy bonus */
   ziadamVyplatitDanovyBonus?: boolean
   ziadamVratitDanovyPreplatok?: boolean
+  ziadamVratitDanovyBonusUroky?: boolean
   iban?: string
 
   /** Musi byt sucastou user inputu, aj ked sa generuje automaticky, inac by
