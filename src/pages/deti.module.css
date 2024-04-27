@@ -26,3 +26,38 @@
 .flexGrow {
   flex-grow: 1;
 }
+
+.monthSelector {
+  display: flex;
+  padding:1rem;
+  flex-wrap: wrap;
+}
+.monthOption {
+  /* TODO: Find out whether there's global variable for borders */
+  border: 2px solid black;
+  padding: 1rem;
+  margin: 0.5rem;
+  flex-basis: 100px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+  box-sizing: content-box;
+
+  cursor: pointer;
+
+  &.selected {
+    background-color: #4cae18;
+    color: white;
+  }
+}
+
+.monthOption:hover {
+  background-color: lightgrey;
+}
+
+.monthOption:focus {
+  outline: 3px solid #ffbf47;
+}
+.monthOption.selected:hover {
+  background-color: #3d8b13;
+}

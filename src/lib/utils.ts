@@ -3,14 +3,14 @@ import IBAN from 'iban'
 import Decimal from 'decimal.js'
 import base64 from 'base64-js'
 import { MAX_CHILD_AGE_BONUS, monthToKeyValue, TAX_YEAR } from './calculation'
+import { monthNames } from '../types/TaxFormUserInput'
 
 export const sortObjectKeys = (object: object) => {
   const ordered = {}
-  Object.keys(object)
-    .sort()
-    .forEach((key) => {
+  for (const key of Object.keys(object)
+    .sort()) {
       ordered[key] = object[key]
-    })
+    }
   return ordered
 }
 
@@ -76,11 +76,7 @@ export const translit = (value: string) => {
 
 export const formatRodneCislo = (newValue: string, previousValue = '') => {
   const formattedNewValue = newValue.replace(/\D/g, '')
-  if (`${newValue} ` === previousValue) {
-    return newValue.slice(0, -3)
-  } else {
-    return formattedNewValue.replace(/^(\d{6})/, '$1 / ')
-  }
+  return `${newValue} ` === previousValue ? newValue.slice(0, -3) : formattedNewValue.replace(/^(\d{6})/, '$1 / ');
 }
 
 export const validateRodneCislo = (value: string): boolean => {
@@ -137,15 +133,33 @@ export const getRodneCisloAgeAtYearAndMonth = (
   return age
 }
 
+export const getValidMonthsForChildBonus = (rodneCislo: string):{name:string, value: number}[] => {
+  let validMonths = []
+
+  if (validateRodneCislo(rodneCislo)) {
+    const rodneCisloWithoutSlash = rodneCislo.replace(' / ', '')
+    validMonths = monthNames.reduce((newMonths, monthName) => {
+      const newMonth = monthToKeyValue(monthName)
+
+      const age = getRodneCisloAgeAtYearAndMonth(
+        rodneCisloWithoutSlash,
+        TAX_YEAR,
+        newMonth.value,
+      )
+      return age < MAX_CHILD_AGE_BONUS && age >= 0
+        ? [...newMonths, newMonth]
+        : newMonths
+    }, [])
+  }
+
+  return validMonths
+}
+
 export const formatIban = (newValue: string, previousValue = '') => {
   const prefix = newValue.trim().slice(0, 2)
   const number = newValue.trim().slice(2).replace(/\D/g, '')
   const formattedNewValue = `${prefix}${number}`
-  if (`${newValue} ` === previousValue) {
-    return newValue.slice(0, -2)
-  } else {
-    return IBAN.printFormat(formattedNewValue)
-  }
+  return `${newValue} ` === previousValue ? newValue.slice(0, -2) : IBAN.printFormat(formattedNewValue);
 }
 
 export const validateIbanFormat = (value: string): boolean => {

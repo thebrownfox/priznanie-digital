@@ -82,7 +82,7 @@ export const childrenUserInputInitialValues: ChildrenUserInput = {
   partner_bonus_na_deti_od: "",
   partner_bonus_na_deti_do: "",
   r034a: '',
-  children: [makeEmptyChild()]
+  children: []
 }
 
 export const pensionInitialValues: PensionUserInput = {
@@ -121,8 +121,8 @@ export const initTaxFormUserInputValues: TaxFormUserInput = {
   ...urokyInitialValues,
   ...twoPercentInitialValues,
   ...taxBonusInitialInput,
-  ...{ datum: '' },
-  ...{ email: '' },
+   datum: '' ,
+   email: '' ,
 }
 
 export const initialPostponeUserInput: PostponeUserInput = {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FieldArray, Form, useFormikContext } from 'formik'
 import styles from './deti.module.css'
@@ -23,6 +23,7 @@ import {
   minChildAgeBonusMonth,
   numberInputRegexp,
   parseInputNumber,
+  getValidMonthsForChildBonus,
 } from '../lib/utils'
 import { Page } from '../components/Page'
 import { ErrorSummary } from '../components/ErrorSummary'
@@ -241,43 +242,6 @@ const Deti: Page<ChildrenUserInput> = ({
                     </>
                   )}
                 </FieldArray>
-
-                {/* <FieldArray name="children">
-                  {(arrayHelpers) => (
-                    <div className={styles.childrenInputGroup}>
-                      {values.children.map((child, index) => (
-                        <div key={child.id}>
-                          {values.children.length > 1 && (
-                            <h2
-                              className={classnames(
-                                'govuk-heading-m',
-                                'govuk-!-margin-top-3',
-                                styles.childHeadline,
-                              )}
-                            >
-                              {index + 1}. dieťa
-                              <button
-                                className="govuk-button btn-secondary btn-warning"
-                                type="button"
-                                onClick={() => arrayHelpers.remove(index)}
-                                data-test={`remove-child-${index}`}
-                              >
-                                Odstrániť {index + 1}. dieťa
-                              </button>
-                            </h2>
-                          )}
-                          <ChildForm
-                            savedValues={child}
-                            index={index}
-                            setFieldValue={setFieldValue}
-                          />
-                        </div>
-                      ))}
-
-                    </div>
-                  )}
-                </FieldArray> */}
-
                 {JSON.stringify(values.children, null, '\t')}
                 {taxForm.danovyBonusNaDieta.nevyuzityDanovyBonus.greaterThan(
                   new Decimal(0),
@@ -490,19 +454,24 @@ interface ChildFormProps {
 const ChildForm = ({ index }: ChildFormProps) => {
   const { values, setFieldValue } = useFormikContext<ChildrenUserInput>()
 
-  const rodneCislo = values.children[index].rodneCislo
-  const wholeYear = values.children[index].wholeYear
+  const [name, setName] = useState("")
+  const [rodneCislo, setRodneCislo] = useState("")
+  const [wholeYear, setWholeYear] = useState(true)
+  const [selectedMonths, setSelectedMonths] = useState([])
 
-  const monthNamesFrom = new Set(monthNames.filter((month) =>
-    minChildAgeBonusMonth(rodneCislo, month),
-  ))
-  const monthNamesUntil = monthNames.filter((month) =>
-    maxChildAgeBonusMonth(rodneCislo, month),
-  )
-  const monthOptions = monthNamesUntil.filter((value) =>
-    monthNamesFrom.has(value),
-  )
+  const monthOptions = getValidMonthsForChildBonus(rodneCislo)
+
   const bonusInPartOfYear = monthOptions.length < 12
+
+  const save = () => {
+          const shouldValidate = rodneCislo.length >= RODNE_CISLO_DLZKA
+          setFieldValue(
+            `children[${index}].rodneCislo`,
+            rodneCislo,
+            shouldValidate,
+          )
+    setFieldValue(`children[${index}].wholeYear`, wholeYear)
+  }
 
   useEffect(() => {
     if (
@@ -521,18 +490,23 @@ const ChildForm = ({ index }: ChildFormProps) => {
       //   setFieldValue(`children[${index}].monthTo`, toMonthValue)
       // }
     } else {
-      setFieldValue(`children[${index}].wholeYear`, true)
+    // setFieldValue(`children[${index}].wholeYear`, true)
     }
   }, [bonusInPartOfYear, rodneCislo])
 
   return (
     <>
       <Input
+        value={name}
         name={`children[${index}].priezviskoMeno` as any}
         type="text"
         label="Meno a priezvisko"
+        onChange={(event) => {
+          setName(event.currentTarget.value)
+        }}
       />
       <Input
+        value={rodneCislo}
         name={`children[${index}].rodneCislo` as any}
         type="text"
         label="Rodné číslo"
@@ -543,19 +517,14 @@ const ChildForm = ({ index }: ChildFormProps) => {
             event.currentTarget.value,
             rodneCislo,
           )
-          const shouldValidate = rodneCisloValue.length >= RODNE_CISLO_DLZKA
-          setFieldValue(
-            `children[${index}].rodneCislo`,
-            rodneCisloValue,
-            shouldValidate,
-          )
+          setRodneCislo(rodneCisloValue)
         }}
       />
       <h3 className="govuk-heading-s">Daňový bonus si uplatňujem</h3>
       <RadioGroup
         value={wholeYear ? 'wholeYear' : 'partYear'}
         onChange={(value) => {
-          setFieldValue(`children[${index}].wholeYear`, value === 'wholeYear')
+          setWholeYear(value === 'wholeYear')
         }}
       >
         <Radio
@@ -575,13 +544,36 @@ const ChildForm = ({ index }: ChildFormProps) => {
         <RadioConditional forValue="partYear">
           <legend className="govuk-fieldset__legend govuk-fieldset__legend--s">
             <p className="govuk-hint">
-              Daňový bonus si môžete uplatniť v mesiacoch {monthOptions[0]} až{' '}
-              {monthOptions[monthOptions.length - 1]}
+              Daňový bonus si môžete uplatniť v mesiacoch{' '}
+              {monthOptions[0]?.name} až{' '}
+              {monthOptions[monthOptions.length - 1]?.name}
             </p>
           </legend>
           <div
-          // className={classnames('govuk-form-group', styles.inlineFieldContainer)}
-          ></div>
+            // className={classnames('govuk-form-group', styles.inlineFieldContainer)}
+            className={classnames(styles.monthSelector)}
+          >
+            {monthOptions.map((monthOption) => (
+              <button
+                type="button"
+                className={classnames(styles.monthOption, {
+                  [styles.selected]: selectedMonths.includes(monthOption.value),
+                })}
+                onClick={() => {
+                  const isSelected = selectedMonths.includes(monthOption.value)
+                  const newSelected = isSelected
+                    ? selectedMonths.filter(
+                        (selectedMonth) => selectedMonth !== monthOption.value,
+                      )
+                    : [...selectedMonths, monthOption.value].sort()
+                  setSelectedMonths(newSelected)
+                }}
+                key={monthOption.value}
+              >
+                {monthOption.name}
+              </button>
+            ))}
+          </div>
         </RadioConditional>
       </RadioGroup>
     </>
